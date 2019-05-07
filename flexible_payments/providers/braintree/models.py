@@ -1,0 +1,4 @@
+
+
+class BraintreePaymentMethod(PaymentMethod):
+    pass
