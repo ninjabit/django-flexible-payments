@@ -11,31 +11,19 @@ django-flexible-payments
 .. image:: https://codecov.io/gh/ninjabit/django-flexible-payments/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/ninjabit/django-flexible-payments
 
-Reusable, extensible, integrated and independent Plans, Quotas, Payments, Invoices for Django.
+Independent and reusable Payment app for Django, used to build the Django Subscription Plan System.
 
 Why
 ---
 
 Taking inspiration from
-silver,
-django-payments,
-django-getpaid,
-django-plans,
-django-invoices,
-not having found the needed flexibility around the payment providers configuration and the users' subscription flow,
-the flexible <plan,payment,billing,invoice> apps ecosystem
-try to fill the gap leveraging a complete independent communication system among apps based on signals and hooks.
-Any app in the ecosystem support the swappable models approach to let the developers use this library swapping the
-default implementations with their own.
-Any app of the ecosystem can be swapped out entirely and replaced with compatible ones, listening and emitting the same
-signals, with the same high level api implementation.
-
-For example, the signup flow, leveraging
-django-registration
-and the compatible app
-django-allauth
-can be integrated with django-flexible-plans to allow the user signup with the desired plan, have in the signup process the payment phase,
-and eventually having the account with the subscription activated once the payment has been approved and received.
+silver
+django-payments
+django-getpaid
+django-plans
+django-invoices
+django-flexible-payments offers a customizable approach to support payments;
+PaymentMethod and Transaction are connected with their PaymentProcessor
 
 How
 ---
@@ -100,6 +88,10 @@ Tools used in rendering this package:
 
 *  Cookiecutter_
 *  `cookiecutter-djangopackage`_
+*  `django-fsm`_
+*  `django-money`_
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`cookiecutter-djangopackage`: https://github.com/pydanny/cookiecutter-djangopackage
+.. _django-fsm: https://github.com/viewflow/django-fsm
+.. _django-money: https://github.com/django-money/django-money

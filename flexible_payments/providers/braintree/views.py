@@ -1,4 +1,3 @@
-import braintree as sdk
 from flexible_payments.providers.base import BaseProvider
 
 

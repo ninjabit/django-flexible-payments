@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from braces.views import StaffuserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -7,26 +9,21 @@ from django.views.generic import (
     ListView
 )
 
-from .models.products import (
-    Product,
-)
+from flexible_payments.models.payment_methods import PaymentMethod
+from flexible_payments.models.transactions import Transaction
 
 
-class ProductCreateView(CreateView):
-    model = Product
+class PaymentMethodListView(StaffuserRequiredMixin, ListView):
+    model = PaymentMethod
 
 
-class ProductDeleteView(DeleteView):
-    model = Product
+class PaymentMethodDetailView(StaffuserRequiredMixin, DetailView):
+    model = PaymentMethod
 
 
-class ProductDetailView(DetailView):
-    model = Product
+class TransactionListView(StaffuserRequiredMixin, ListView):
+    model = Transaction
 
 
-class ProductUpdateView(UpdateView):
-    model = Product
-
-
-class ProductListView(ListView):
-    model = Product
+class TransactionDetailView(StaffuserRequiredMixin, DetailView):
+    model = Transaction

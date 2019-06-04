@@ -10,6 +10,12 @@ django-model-utils = "*"
 braintree = "*"
 swapper = "*"
 django = "*"
+django-fsm = "*"
+django-money = "*"
+django-fsm-admin = "*"
+django-fsm-log = "*"
+django-braces = "*"
+cryptography = "*"
 
 [requires]
 python_version = "3.6"
