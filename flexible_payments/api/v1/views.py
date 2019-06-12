@@ -1,6 +1,10 @@
-from rest_framework import permissions
+from rest_framework import permissions, viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from flexible_payments.api.v1.serializers import PaymentMethodSerializer, TransactionSerializer
+from flexible_payments.models import PaymentMethod, Transaction
 from flexible_payments.processors.braintree.payment_processor import BraintreePaymentProcessor
 from flexible_payments.processors.utils import get_instance
 
@@ -28,3 +32,15 @@ class BraintreeTransactionView(APIView):
                 {'detail': 'Braintree nonce not present'}
             )
         return Response()
+
+
+class PaymentMethodViewSet(viewsets.ModelViewSet):
+    queryset = PaymentMethod.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PaymentMethodSerializer
+
+
+class TransactionViewSet(viewsets.ModelViewSet):
+    queryset = Transaction.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = TransactionSerializer

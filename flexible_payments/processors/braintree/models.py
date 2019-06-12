@@ -3,6 +3,7 @@ import swapper
 from braintree.exceptions import NotFoundError
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from flexible_payments.models import Transaction
 from flexible_payments.models.payment_methods import PaymentMethod
 
 
@@ -40,3 +41,8 @@ class BraintreePaymentMethod(PaymentMethod):
 
     class Meta:
         proxy = True
+
+
+class BraintreeTransaction(models.Model):
+    braintree_id = models.CharField(max_length=150, blank=True)
+    transaction = models.ForeignKey('flexible_payments.Transaction', on_delete=models.CASCADE)

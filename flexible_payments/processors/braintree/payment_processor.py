@@ -151,6 +151,9 @@ class BraintreePaymentProcessor(PaymentProcessorBase, TriggeredProcessorMixin):
     def fetch_transaction_status(self, transaction):
         pass
 
+    def is_payment_method_recurring(self, payment_method):
+        raise NotImplementedError
+
     ###################
     # Private Methods #
     ###################
@@ -202,3 +205,93 @@ class BraintreePaymentProcessor(PaymentProcessorBase, TriggeredProcessorMixin):
             return {'payment_method_nonce': payment_method.nonce}
         else:
             return {}
+
+    def _update_payment_method(self, payment_method, result_details, instrument_type):
+        """
+        :param payment_method: A BraintreePaymentMethod.
+        :param result_details: A (part of) braintreeSDK result(response)
+                               containing payment method information.
+        :param instrument_type: The type of the instrument (payment method);
+                                see BraintreePaymentMethod.Types.
+        :description: Updates a given payment method's data with data from a
+                      braintreeSDK result payment method.
+        """
+        payment_method_details = {
+            'type': instrument_type,
+            'image_url': result_details.image_url,
+        }
+
+        if instrument_type == payment_method.Types.PayPal:
+            payment_method_details['email'] = result_details.payer_email
+            payment_method.display_info = result_details.payer_email
+        elif instrument_type == payment_method.Types.CreditCard:
+            payment_method_details.update({
+                'card_type': result_details.card_type,
+                'last_4': result_details.last_4,
+            })
+
+        payment_method.update_details(payment_method_details)
+
+        if self.is_payment_method_recurring(payment_method):
+            if result_details.token:
+                payment_method.token = result_details.token
+                payment_method.data.pop('nonce', None)
+                payment_method.verified = True
+
+        payment_method.save()
+
+    def _update_transaction_status(self, transaction, result_transaction):
+        """
+        :param transaction: A Silver transaction with a Braintree payment method.
+        :param result_transaction: A transaction from a braintreeSDK
+                                   result(response).
+        :description: Updates a given transaction's data with data from a
+                      braintreeSDK result payment method.
+        :returns True if transaction is on the happy path, False otherwise.
+        """
+        if not transaction.data:
+            transaction.data = {}
+        transaction.external_reference = result_transaction.id
+        status = result_transaction.status
+        transaction.data.update({
+            'status': status,
+            'braintree_id': result_transaction.id
+        })
+
+        target_state = None
+        try:
+            if status in [braintree.Transaction.Status.AuthorizationExpired,
+                          braintree.Transaction.Status.SettlementDeclined,
+                          braintree.Transaction.Status.Failed,
+                          braintree.Transaction.Status.GatewayRejected,
+                          braintree.Transaction.Status.ProcessorDeclined]:
+                target_state = transaction.STATE.FAILED
+                if transaction.state != target_state:
+                    fail_code = self._get_fail_code(result_transaction)
+                    fail_reason = self._get_braintree_fail_code(result_transaction)
+                    transaction.fail(fail_code=fail_code, fail_reason=fail_reason)
+                    return False
+            elif status == braintree.Transaction.Status.Voided:
+                target_state = transaction.STATE.CANCELED
+                if transaction.state != target_state:
+                    transaction.cancel()
+                    return False
+            elif status in [braintree.Transaction.Status.Settling,
+                            braintree.Transaction.Status.SettlementPending,
+                            braintree.Transaction.Status.Settled]:
+                target_state = transaction.STATE.SETTLED
+                if transaction.state != target_state:
+                    transaction.settle()
+                    return True
+            else:
+                return True
+        except TransitionNotAllowed as e:
+            logger.warning('Braintree transaction error %s' % {
+                'initial_state': transaction.state,
+                'target_state': target_state,
+                'transaction_id': transaction.id,
+                'transaction_uuid': transaction.uuid
+            })
+            raise e
+        finally:
+            transaction.save()

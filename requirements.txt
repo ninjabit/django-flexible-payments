@@ -1,6 +1,8 @@
 django-model-utils>=2.0
 # Additional requirements go here
 Django
-django-rest-framework
+djangorestframework
+markdown
+django-filter
 braintree
 stripe

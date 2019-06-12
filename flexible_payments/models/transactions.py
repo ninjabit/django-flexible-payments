@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class Transaction(TimeStampedModel):
+    """
+    Transaction model
+    """
     class STATE:
         INITIAL = 'initial'
         PENDING = 'pending'
@@ -39,6 +42,7 @@ class Transaction(TimeStampedModel):
         'flexible_payments.PaymentMethod',
         on_delete=models.DO_NOTHING
     )
+    external_reference = models.CharField(max_length=256, null=True, blank=True)
     data = JSONField(default=dict, null=True, blank=True)
 
     @property
@@ -83,5 +87,5 @@ class Transaction(TimeStampedModel):
 
     @transaction.atomic()
     def save(self, *args, **kwargs):
-        # TODO: emit signal? builtin signals should trigger automatically
+        # TODO: emit signal? builtin signals for saving models should trigger automatically
         super(Transaction, self).save(*args, **kwargs)

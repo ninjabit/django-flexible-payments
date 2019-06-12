@@ -29,7 +29,7 @@ class PaymentMethod(TimeStampedModel):
     verified = models.BooleanField(default=False)
     canceled = models.BooleanField(default=False)
 
-    object = InheritanceManager()
+    objects = InheritanceManager()
 
     def encrypt_data(self, data):
         key = settings.PAYMENT_METHOD_SECRET
